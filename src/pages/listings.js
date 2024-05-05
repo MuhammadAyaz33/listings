@@ -3,52 +3,64 @@ import { UseAxios } from 'hooks/useAxios';
 import Card from 'components/Card';
 import FailureCard from 'components/FailureCard';
 import { FAILURE_MESSAGE, URL } from 'constants/constants';
-import { SearchListing, SortListing } from 'helpers/helpers';
-import { DeleteItem } from 'helpers/helpers';
+import { searchListing, sortListing, deleteItem } from 'helpers';
+import { UseLocalStorage } from 'hooks/useLocalStorage';
 
 const Listings = () => {
   const [listings, setListings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [sorted, setSorted] = useState(false);
-  const [animate, setAnimate] = useState(false)
-  const { data, error, loaded } = UseAxios(
-    URL,
-    'get'
-  );
+  const { setItem, getItem } = UseLocalStorage('listings'); // UseLocalStorage custom hook to get data from loacalstorage if api fails 
+  const { data, error, loaded } = UseAxios(URL, 'get');  // UseAxios custom hook to fetch data using axios
 
   useMemo(() => {
-    setListings(data);
-  }, [data]);
+    // Checking if data is comming from api else will get from cache storage
+    if (data) {
+      setItem(data);
+      setListings(data);
+    } else {
+      if (getItem() !== undefined) {
+        setListings(getItem());
+      }
+    }
+  }, [data, error]);
 
-  const handleSorting = () => {
+  const handleSorting = () => { 
     setSorted(!sorted);
-    SortListing(setListings, sorted);
-  }
+    sortListing(setListings, sorted); //helper method to sort the list alphabeticaly 
+  };
 
   if (loaded) {
-    return error ? (
-        <FailureCard title="Something went wrong" message={error || FAILURE_MESSAGE} />
+    return listings.length === 0 && error ? (
+      <FailureCard title="Something went wrong" message={error || FAILURE_MESSAGE} />
     ) : (
       <>
         <div className="wrapper">
-          <input className="search-input" type="text" name="search" placeholder="Search by name..."
+          <input
+            className="search-input"
+            type="text"
+            name="search"
+            placeholder="Search..."
             value={searchTerm}
-            onChange={(e) => SearchListing(e.target.value, setSearchTerm, setListings)} />
+            onChange={(e) => searchListing(e.target.value, setSearchTerm, setListings)}
+          />
 
-          <button className="sort-btn" onClick={() => handleSorting()}>{sorted ? "Sorted" : "Sort"}</button>
+          <button className="sort-btn" onClick={() => handleSorting()}>
+            {sorted ? 'Sorted' : 'Sort'}
+          </button>
         </div>
         <div className="wrapper">
-          {listings && listings.map((listing, ind) => (
-            <div key={ind} className={ animate ? "example-enter" : null }>
-              <Card listing={listing} handleDelete={() => DeleteItem(ind, setListings, setAnimate)} />
-            </div>
-          ))}
+          {listings &&
+            listings.map((listing, ind) => (
+              <div key={ind}>
+                <Card listing={listing} handleDelete={() => deleteItem(ind, setListings)} />
+              </div>
+            ))}
         </div>
       </>
-
     );
   }
   return <span className="loading">Loading...</span>;
-}
+};
 
 export default Listings;

@@ -14,21 +14,23 @@ const Card = ({ listing, handleDelete }) => {
   return (
     <>
       {listing && (
-          <div className="card">
-            <h2 className="name">{listing?.name}</h2>
-            <p className="country">{listing?.country}</p>
-            <div className="domains">
-              {listing?.domains.map((domian, ind) => (
-                <div key={ind}>
-                  <p>{domian}</p>
-                </div>
-              ))}
-            </div>
-            <div className="actions-btn">
-              <button onClick={() => handleCard(listing)}>Details</button>
-              <button className="delete-btn" onClick={() => handleDelete()}>Delete</button>
-            </div>
+        <div className="card">
+          <h2 className="name">{listing?.name}</h2>
+          <p className="country">{listing?.country}</p>
+          <div className="domains">
+            {listing?.domains.map((domian, ind) => (
+              <div key={ind}>
+                <p>{domian}</p>
+              </div>
+            ))}
           </div>
+          <div className="actions-btn">
+            <button onClick={() => handleCard(listing)}>Details</button>
+            <button className="delete-btn" onClick={() => handleDelete()}>
+              Delete
+            </button>
+          </div>
+        </div>
       )}
     </>
   );
